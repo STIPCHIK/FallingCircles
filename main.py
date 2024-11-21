@@ -4,212 +4,10 @@ import numpy as np
 from random import randint, choice
 import pygame
 
-# Функция для добавления PNG изображения на изображение (для рисования хомяка)
-def add_png_to_image(base_image, png_path, x_offset, y_offset):
-
-    png_image = cv2.imread(png_path, cv2.IMREAD_UNCHANGED)
-    b, g, r, a = cv2.split(png_image)
-    overlay_color = cv2.merge((r, g, b))
-    overlay_alpha = a / 255.0
-    base_h, base_w = base_image.shape[:2]
-    overlay_h, overlay_w = overlay_color.shape[:2]
-    start_x = max(x_offset, 0)
-    start_y = max(y_offset, 0)
-    end_x = min(x_offset + overlay_w, base_w)
-    end_y = min(y_offset + overlay_h, base_h)
-    if start_x >= end_x or start_y >= end_y:
-        return base_image
-    visible_overlay = overlay_color[start_y - y_offset:end_y - y_offset, start_x - x_offset:end_x - x_offset]
-    visible_alpha = overlay_alpha[start_y - y_offset:end_y - y_offset, start_x - x_offset:end_x - x_offset]
-    roi = base_image[start_y:end_y, start_x:end_x]
-    for c in range(0, 3):
-        roi[:, :, c] = roi[:, :, c] * (1 - visible_alpha) + visible_overlay[:, :, c] * visible_alpha
-    return base_image
-
-
-
-# Класс для всех движущихся объектов
-class MovingObject:
-    def __init__(self, x:int, y:int, speed:list[int]):
-        self.x = x
-        self.y = y
-        self.speed = speed
-
-    def update(self):
-        self.x += self.speed[0]
-        self.y += self.speed[1]
-
-
-    def __str__(self):
-        return f"Object at ({self.x}, {self.y}) with speed {self.speed}"
-
-# Класс падающих кругов
-
-class Circle(MovingObject):
-    def __init__(self, x, y, radius, color, speed:int):
-        super().__init__(x, y, [0, speed])
-        self.radius = radius
-        self.color = color
-
-    def draw(self, screen):
-        cv2.circle(screen, (self.x, self.y), self.radius, self.color, 5)
-
-# Класс хомяков, которые скачут по экрану (как DVD), когда у игрока остаётся 1 круг. При соприкосновении с хомяком игрок получает новый круг
-
-class Hamster(MovingObject):
-    def __init__(self, x, y, speed:list[int], image_path:str = 'static/images/hamster.png'):
-        super().__init__(x, y, speed)
-        self.image_path = image_path
-        self.image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-
-    def update(self):
-        self.x += self.speed[0]
-        self.y += self.speed[1]
-        if self.x < 0:
-            self.x = 0
-            self.speed[0] *= -1
-        elif self.x + self.image.shape[1] > WIDTH:
-            self.x = WIDTH - self.image.shape[1]
-            self.speed[0] *= -1
-        if self.y < 0:
-            self.y = 0
-            self.speed[1] *= -1
-        elif self.y + self.image.shape[0] > HEIGHT:
-            self.y = HEIGHT - self.image.shape[0]
-            self.speed[1] *= -1
-
-    def draw(self, screen):
-        add_png_to_image(screen, self.image_path, self.x, self.y)
-
-    def __str__(self):
-        return f"Hamster at ({self.x}, {self.y}) with speed {self.speed}"
-
-
-# Класс хайндеров, которые являются восьмиугольниками и закрывают обзор игроку
-# Их количество увеличивается по мере прохождения игры
-
-class Hinder(MovingObject):
-    def __init__(self, x, y, speed:list[int], size:int=30, color:tuple[int]=(0,0,0)):
-        super().__init__(x, y, speed)
-        self.shape = [[x,y],[x+size,y],[x+size+size//2,y+size//2],[x+size+size//2,y+size+size//2],[x+size,y+size+size],[x,y+size+size],[x-size//2,y+size//2+size],[x-size//2,y+size//2]]
-        self.x += size//2
-        self.y += size
-        self.color = list(color)
-        self.size = size
-
-    def update(self):
-        self.x += self.speed[0]
-        self.y += self.speed[1]
-        for i in range(len(self.shape)):
-            self.shape[i][0] += self.speed[0]
-            self.shape[i][1] += self.speed[1]
-        self.color[0] = (self.color[0] + 5) % 255
-        self.color[1] = (self.color[1] + 5) % 255
-        self.color[2] = (self.color[2] - 5) % 255
-
-    def draw(self, screen):
-        cv2.fillPoly(screen, [np.array(self.shape, dtype=np.int32)], tuple(self.color))
-
-# Класс диагональных хайндеров, которые являются параллелограммами и закрывают обзор игроку.
-# Их количество также увеличивается по мере прохождения игры
-
-class DiagonalHinder(MovingObject):
-    def __init__(self,speed:int, size:int=100, color:tuple[int]=(0,0,0)):
-        global WIDTH, HEIGHT
-        super().__init__(-300 if speed > 0 else WIDTH+300, 0, [speed,0])
-        if speed > 0:
-            self.shape = [[-300, 0],[-300+size,0],[-300 + size + size,HEIGHT],[-300+size,HEIGHT]]
-        else:
-            self.shape = [[WIDTH+300, 0],[WIDTH+300-size,0],[WIDTH+300 - size - size,HEIGHT],[WIDTH+300-size,HEIGHT]]
-        self.x += -300 if speed > 0 else WIDTH+300
-        self.y += 0
-        self.color = list(color)
-        self.size = size
-
-    def update(self):
-        self.x += self.speed[0]
-        for i in range(len(self.shape)):
-            self.shape[i][0] += self.speed[0]
-        self.color[0] = (self.color[0] - 5) % 255
-        self.color[1] = (self.color[1] + 5) % 255
-        self.color[2] = (self.color[2] - 5) % 255
-
-    def draw(self, screen):
-        cv2.fillPoly(screen, [np.array(self.shape, dtype=np.int32)], tuple(self.color))
-
-# Функции для генерации хайндеров и кругов
-
-def gen_new_diagonal_hinder(speed, size, color):
-    return DiagonalHinder(choice([-1,1])*randint(10,50), size, color)
-
-def gen_new_hinder(width, height, size, color, speed):
-    return Hinder(randint(100, width - 100), randint(100, height - 230), [randint(-speed, speed), randint(-speed, speed)], size, color)
-
-def gen_new_circle(starting_height_random, width, height, radius, color, speed):
-    if starting_height_random:
-        return Circle(randint(100, width - 100), randint(100, height - 230), radius, color, speed)
-    else:
-        return Circle(randint(100, width - 100), 0, radius, color, speed)
-
-
-# Функция для определения рабочих портов камеры
-
-def list_ports():
-    is_working = True
-    dev_port = 0
-    working_ports = []
-    available_ports = []
-    while is_working:
-        camera = cv2.VideoCapture(dev_port)
-        if not camera.isOpened():
-            is_working = False
-            print(f"Порт {dev_port} не работает.")
-        else:
-            is_reading, img = camera.read()
-            w = camera.get(3)
-            h = camera.get(4)
-            if is_reading:
-                print(f"Порт {dev_port} работает и считывает изображение ({h} x {w})")
-                working_ports.append(dev_port)
-            else:
-                print(f"Порт {dev_port} для камеры ({h} x {w}) есть, но не считывает изображение.")
-                available_ports.append(dev_port)
-        dev_port += 1
-    return available_ports, working_ports
-
-# Функция для изменения цвета изображения
-
-def make_image_reddish(image, intensity=50):
-    # Проверяем, что интенсивность находится в допустимых пределах
-    intensity = max(0, min(intensity, 255))
-
-    # Разделяем изображение на каналы
-    r, g, b = cv2.split(image)
-
-    # Увеличиваем красный канал (интенсивность)
-    r = cv2.add(r, intensity)
-
-    # Соединяем каналы обратно в изображение
-    reddish_image = cv2.merge((r, g, b))
-
-    return reddish_image
-
-def make_image_purplish(image, intensity=50):
-    # Проверяем, что интенсивность находится в допустимых пределах
-    intensity = max(0, min(intensity, 255))
-
-    # Разъединяем изображение на каналы
-    r, g, b = cv2.split(image)
-
-    # Меняем интенсивность красного и синего каналов
-    r = cv2.add(r, intensity)
-    b = cv2.add(b, intensity)
-
-    # Соединим каналы обратно в изображение
-    purplish_image = cv2.merge((r, g, b))
-
-    return purplish_image
-
+from Settings import *
+from ObjectClasses import *
+from Filters import *
+from ImageFunctions import *
 
 # Инициализация миксера, музыки и звуков
 
@@ -238,47 +36,38 @@ handsDetector = mp.solutions.hands.Hands()
 
 sl, wl = list_ports()
 
+
+def start_hardmode():
+    global SPEED, HARD_MODE_COLOR, CIRCLE_COLOR, RESPAWN_CIRCLES, CIRCLE_RADIUS
+    SPEED = 7
+    CIRCLE_COLOR = HARD_MODE_COLOR
+    RESPAWN_CIRCLES = False
+    CIRCLE_RADIUS = 18
+    levelup_sound.play()
+    play_music(hardmode_music)
+
+    for i in cur_aims:
+        i.speed = [0,SPEED]
+        i.radius = CIRCLE_RADIUS
+        i.color = CIRCLE_COLOR
+
+# Функция для начала экстремод
+def start_extrememode():
+    global SPEED, EXTREME_MODE_COLOR, CIRCLE_COLOR, RESPAWN_CIRCLES, CIRCLE_RADIUS
+    SPEED = 10
+    CIRCLE_COLOR = EXTREME_MODE_COLOR
+    RESPAWN_CIRCLES = False
+    CIRCLE_RADIUS = 15
+    levelup_sound.play()
+    play_music(extrememode_music)
+    for i in cur_aims:
+        i.speed = [0,SPEED]
+        i.radius = CIRCLE_RADIUS
+        i.color = CIRCLE_COLOR
+
 cap = cv2.VideoCapture(max(wl))
 
-# ========================== НАСТРОЙКИ ИГРЫ ==========================
 
-STARTING_HEIGHT_RANDOM = False
-STARTING_CIRCLES_COUNT = 5
-WIDTH, HEIGHT = 854, 480
-CIRCLE_RADIUS = 20
-SPEED = 5
-
-DEFAULT_MODE_COLOR = (0, 0, 255)
-HARD_MODE_COLOR = (200, 0, 0)
-EXTREME_MODE_COLOR = (100, 0, 100)
-CIRCLE_COLOR = (0, 0, 255)
-RESPAWN_CIRCLES = True
-hardmode = False
-extrememode = False
-SHOW_FINGER_POINT = True
-
-HARD_MODE_STARTING_POINT = 50
-EXTREME_MODE_STARTING_POINT = 100
-HINDERS_STARTING_POINT = 120
-DIAGONAL_HINDERS_STARTING_POINT = 150
-
-MAX_HAMSTERS = 1
-MAX_HINDERS = 1
-MAX_DIAGONAL_HINDERS = 2
-
-GOD_MODE = True
-
-score = 101
-
-HARD_MODE_IMAGE_MAX_INTENSITY = 50
-
-EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SPEED = 5
-EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN = 1
-EXTREME_MODE_IMAGE_CUR_INTENSITY = 50
-EXTREME_MODE_IMAGE_MIN_INTENSITY = 50
-EXTREME_MODE_IMAGE_MAX_INTENSITY = 120
-
-# =====================================================================
 
 # Функция для начала хардмода
 def start_hardmode():
@@ -451,6 +240,7 @@ while cap.isOpened():
     # Рисуем количество очков и режим игры
     cv2.putText(flippedRGB, f"Score: {score}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
+
     if hardmode:
         flippedRGB = make_image_reddish(flippedRGB, intensity=50)
         cv2.putText(flippedRGB, "HARDMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
@@ -464,6 +254,10 @@ while cap.isOpened():
             EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN = 1
         EXTREME_MODE_IMAGE_CUR_INTENSITY += EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN * EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SPEED
         flippedRGB = make_image_purplish(flippedRGB, intensity=EXTREME_MODE_IMAGE_CUR_INTENSITY)
+
+    # Рисуем водяной знак о том, что включен режим бога
+    if GOD_MODE:
+        flippedRGB = draw_god_mode_watermark(flippedRGB)
 
     # Показываем изображение
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
