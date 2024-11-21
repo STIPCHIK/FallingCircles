@@ -1,5 +1,3 @@
-from pickle import FALSE
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -179,6 +177,40 @@ def list_ports():
         dev_port += 1
     return available_ports, working_ports
 
+# Функция для изменения цвета изображения
+
+def make_image_reddish(image, intensity=50):
+    # Проверяем, что интенсивность находится в допустимых пределах
+    intensity = max(0, min(intensity, 255))
+
+    # Разделяем изображение на каналы
+    r, g, b = cv2.split(image)
+
+    # Увеличиваем красный канал (интенсивность)
+    r = cv2.add(r, intensity)
+
+    # Соединяем каналы обратно в изображение
+    reddish_image = cv2.merge((r, g, b))
+
+    return reddish_image
+
+def make_image_purplish(image, intensity=50):
+    # Проверяем, что интенсивность находится в допустимых пределах
+    intensity = max(0, min(intensity, 255))
+
+    # Разъединяем изображение на каналы
+    r, g, b = cv2.split(image)
+
+    # Меняем интенсивность красного и синего каналов
+    r = cv2.add(r, intensity)
+    b = cv2.add(b, intensity)
+
+    # Соединим каналы обратно в изображение
+    purplish_image = cv2.merge((r, g, b))
+
+    return purplish_image
+
+
 # Инициализация миксера, музыки и звуков
 
 pygame.mixer.init()
@@ -234,9 +266,17 @@ MAX_HAMSTERS = 1
 MAX_HINDERS = 1
 MAX_DIAGONAL_HINDERS = 2
 
-GOD_MODE = False
+GOD_MODE = True
 
-score = 0
+score = 101
+
+HARD_MODE_IMAGE_MAX_INTENSITY = 50
+
+EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SPEED = 5
+EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN = 1
+EXTREME_MODE_IMAGE_CUR_INTENSITY = 50
+EXTREME_MODE_IMAGE_MIN_INTENSITY = 50
+EXTREME_MODE_IMAGE_MAX_INTENSITY = 120
 
 # =====================================================================
 
@@ -286,7 +326,14 @@ gameover = False
 while cap.isOpened():
     # Считываем изображение с камеры и изменяем его размер
     ret, frame = cap.read()
+    if not ret or frame is None:
+        print("Ошибка чтения кадра.")
+        break
     frame = cv2.resize(frame, (WIDTH, HEIGHT))
+
+    # Отражаем изображение по горизонтали и конвертируем его в RGB
+    flipped = np.fliplr(frame)
+    flippedRGB = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
 
     # Если изображение не считывается (или зажата кнопка Q), то заканчиваем игру
     if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
@@ -405,10 +452,18 @@ while cap.isOpened():
     cv2.putText(flippedRGB, f"Score: {score}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
     if hardmode:
+        flippedRGB = make_image_reddish(flippedRGB, intensity=50)
         cv2.putText(flippedRGB, "HARDMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
+
     if extrememode:
-        cv2.putText(flippedRGB, "EXTEMEMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, EXTREME_MODE_COLOR, 3,
+        cv2.putText(flippedRGB, "EXTREMEMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, EXTREME_MODE_COLOR, 3,
                     cv2.LINE_AA)
+        if EXTREME_MODE_IMAGE_CUR_INTENSITY >= EXTREME_MODE_IMAGE_MAX_INTENSITY:
+            EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN = -1
+        elif EXTREME_MODE_IMAGE_CUR_INTENSITY <= EXTREME_MODE_IMAGE_MIN_INTENSITY:
+            EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN = 1
+        EXTREME_MODE_IMAGE_CUR_INTENSITY += EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN * EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SPEED
+        flippedRGB = make_image_purplish(flippedRGB, intensity=EXTREME_MODE_IMAGE_CUR_INTENSITY)
 
     # Показываем изображение
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
