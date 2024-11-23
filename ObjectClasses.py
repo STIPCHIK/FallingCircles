@@ -1,14 +1,15 @@
 from random import randint, choice
 import cv2
 import numpy as np
-from Settings import *
+from ImageFunctions import add_png_to_image
+from config import *
 
 # Класс для всех движущихся объектов
 class MovingObject:
-    def __init__(self, x:int, y:int, speed:list[int]):
+    speed = [0,0]
+    def __init__(self, x:int, y:int):
         self.x = x
         self.y = y
-        self.speed = speed
 
     def update(self):
         self.x += self.speed[0]
@@ -20,11 +21,12 @@ class MovingObject:
 # Класс падающих кругов
 
 class Circle(MovingObject):
-    def __init__(self, x, y, radius, color, speed: int):
-        super().__init__(x, y, [0, speed])
-        self.radius = radius
-        self.color = color
-
+    speed = [0, DEFAULT_SPEED]
+    color = DEFAULT_CIRCLE_COLOR
+    respawn = START_RESPAWN_CIRCLES
+    radius = DEFAULT_CIRCLE_RADIUS
+    def __init__(self, x, y):
+        super().__init__(x, y)
     def draw(self, screen):
         cv2.circle(screen, (self.x, self.y), self.radius, self.color, 5)
 
@@ -32,7 +34,8 @@ class Circle(MovingObject):
 
 class Hamster(MovingObject):
     def __init__(self, x, y, speed:list[int], image_path:str = 'static/images/hamster.png'):
-        super().__init__(x, y, speed)
+        super().__init__(x, y)
+        self.speed = speed
         self.image_path = image_path
         self.image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
@@ -64,7 +67,8 @@ class Hamster(MovingObject):
 
 class Hinder(MovingObject):
     def __init__(self, x, y, speed:list[int], size:int=30, color:tuple[int]=(0,0,0)):
-        super().__init__(x, y, speed)
+        super().__init__(x, y)
+        self.speed = speed
         self.shape = [[x,y],[x+size,y],[x+size+size//2,y+size//2],[x+size+size//2,y+size+size//2],[x+size,y+size+size],[x,y+size+size],[x-size//2,y+size//2+size],[x-size//2,y+size//2]]
         self.x += size//2
         self.y += size
@@ -89,8 +93,8 @@ class Hinder(MovingObject):
 
 class DiagonalHinder(MovingObject):
     def __init__(self,speed:int, size:int=100, color:tuple[int]=(0,0,0)):
-        global WIDTH, HEIGHT
-        super().__init__(-300 if speed > 0 else WIDTH+300, 0, [speed,0])
+        super().__init__(-300 if speed > 0 else WIDTH+300, 0)
+        self.speed = [speed,0]
         if speed > 0:
             self.shape = [[-300, 0],[-300+size,0],[-300 + size + size,HEIGHT],[-300+size,HEIGHT]]
         else:
@@ -119,8 +123,13 @@ def gen_new_diagonal_hinder(speed, size, color):
 def gen_new_hinder(width, height, size, color, speed):
     return Hinder(randint(100, width - 100), randint(100, height - 230), [randint(-speed, speed), randint(-speed, speed)], size, color)
 
-def gen_new_circle(starting_height_random, width, height, radius, color, speed):
+def gen_new_circle(starting_height_random, width, height):
     if starting_height_random:
-        return Circle(randint(100, width - 100), randint(100, height - 230), radius, color, speed)
+        return Circle(randint(100, width - 100), randint(100, height - 230))
     else:
-        return Circle(randint(100, width - 100), 0, radius, color, speed)
+        return Circle(randint(100, width - 100), 0)
+
+def gen_new_hamster():
+    return Hamster(randint(0, WIDTH), randint(0, HEIGHT),
+                            [choice([-1, 1]) * randint(Circle.speed[1] * 2, Circle.speed[1] * 3),
+                             choice([-1, 1]) * randint(Circle.speed[1] * 2, Circle.speed[1] * 3)])
