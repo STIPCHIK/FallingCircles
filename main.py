@@ -79,6 +79,8 @@ while cap.isOpened():
         hamster.draw(flippedRGB)
         # Если хомяк соприкоснулся с курсором, то удаляем хомяка и добавляем новый круг
         if (x_tip - hamster.x) ** 2 + (y_tip - hamster.y) ** 2 < 10000:
+            # Воспроизводим звук
+            hamster_sound.play()
             cur_aims.append(gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT))
             hamsters.remove(hamster)
 

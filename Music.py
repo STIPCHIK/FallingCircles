@@ -6,6 +6,7 @@ pygame.mixer.init()
 pickup_sound = pygame.mixer.Sound('static/sounds/pickup.wav')
 levelup_sound = pygame.mixer.Sound('static/sounds/levelup.wav')
 gameover_sound = pygame.mixer.Sound('static/sounds/death.wav')
+hamster_sound = pygame.mixer.Sound('static/sounds/hamster.wav')
 
 default_music = 'static/music/default_music.mp3'
 hardmode_music = 'static/music/hardmode_music.mp3'
