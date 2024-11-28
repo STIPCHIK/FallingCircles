@@ -69,6 +69,7 @@ def prepare_cap_image(cap):
     return cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
 
 def find_tip_position(results, flippedRGB):
+    # За основу взята функция из Canvas
     if results.multi_hand_landmarks is not None:
         x_tip = int(results.multi_hand_landmarks[0].landmark[8].x * flippedRGB.shape[1])
         y_tip = int(results.multi_hand_landmarks[0].landmark[8].y * flippedRGB.shape[0])
