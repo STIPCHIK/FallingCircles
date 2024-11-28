@@ -61,5 +61,6 @@ Game programmed by Nikita Shilov as a school IT project.
 The extreme difficulty level was inspired by the Geometry Dash game.
 Game may use copyright images, music and sounds.
 
-===================================================================
+==============================Status================================
 
+Now my game **still in progress**, but it's completed by 80-90 percents. I'm working on graphics in my game.
