@@ -123,3 +123,12 @@ def draw_god_mode_watermark(image, text="GOD MODE", font=cv2.FONT_HERSHEY_SIMPLE
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
     return output
 
+# Функция для нахождения координат указательных пальцев
+def find_index_finger_positions(results, image):
+    index_fingers = []
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            x = int(hand_landmarks.landmark[8].x * image.shape[1])  # ID 8 - кончик указательного пальца
+            y = int(hand_landmarks.landmark[8].y * image.shape[0])
+            index_fingers.append((x, y))
+    return index_fingers

@@ -23,7 +23,6 @@ hamsters = []
 hinders = []
 diagonal_hinders = []
 
-
 # Основной цикл игры
 while cap.isOpened():
     flippedRGB = prepare_cap_image(cap)
@@ -37,8 +36,8 @@ while cap.isOpened():
 
     # Рисуем курсор и обновляем его позицию
     results = handsDetector.process(flippedRGB)
+    index_finger_positions = find_index_finger_positions(results, flippedRGB)
 
-    x_tip, y_tip = find_tip_position(results, flippedRGB)
 
     # Счётчик кругов под экраном
     count_under_screen = 0
@@ -53,17 +52,19 @@ while cap.isOpened():
             else:
                 count_under_screen += 1
         # Проверяем, не соприкоснулся ли круг с курсором
-        if (x_tip - circle.x) ** 2 + (y_tip - circle.y) ** 2 < circle.radius ** 2:
-            score += 1
-            pickup_sound.play()
-            # Красим круг в зелёный цвет
-            cv2.circle(flippedRGB, (circle.x - 1, circle.y), circle.radius, (0, 255, 0), 7)
-            # Генерируем новый круг (А точнее заменяем координаты старого на новые для оптимизации)
-            new_circle = gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT)
-            new_hamster = check_spawn_hamster(score)
-            if not new_hamster is None:
-                hamsters.append(new_hamster)
-            circle.x, circle.y = new_circle.x, new_circle.y
+        for x_tip, y_tip in index_finger_positions:
+            if SHOW_FINGER_POINT:
+                cv2.circle(flippedRGB, (x_tip, y_tip), 10, (255, 0, 0), -1)
+            if (x_tip - circle.x) ** 2 + (y_tip - circle.y) ** 2 < circle.radius ** 2:
+                score += 1
+                pickup_sound.play()
+                cv2.circle(flippedRGB, (circle.x - 1, circle.y), circle.radius, (0, 255, 0), 7)
+                new_circle = gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT)
+                new_hamster = check_spawn_hamster(score)
+                if new_hamster:
+                    hamsters.append(new_hamster)
+                circle.x, circle.y = new_circle.x, new_circle.y
+                break  # Исключить двойное засчитывание круга
 
     # Если все круги под экраном, то конец игры
     if count_under_screen == len(cur_aims) and not GOD_MODE:
