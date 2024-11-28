@@ -138,7 +138,7 @@ while cap.isOpened():
 
     # Показываем изображение
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
-    cv2.imshow("Hands", res_image)
+    cv2.imshow("Falling Circles", res_image)
     cv2.waitKey(1)
 
 # Закрываем окно и освобождаем ресурсы

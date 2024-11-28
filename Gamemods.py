@@ -47,7 +47,7 @@ def gameover(flippedRGB, score):
         flippedRGB[:, :, 1] = np.maximum(0, flippedRGB[:, :, 1] - 1)
         flippedRGB[:, :, 2] = np.maximum(0, flippedRGB[:, :, 2] - 1)
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
-        cv2.imshow("Hands", res_image)
+        cv2.imshow("Falling Circles", res_image)
         cv2.waitKey(1)
 
 def hard_mode(flippedRGB):
