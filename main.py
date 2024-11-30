@@ -1,15 +1,25 @@
+from LoadingScreen import *
+from config import *
+loading_screen = LoadingScreen(WIDTH, HEIGHT)
+loading_screen.show()
+loading_screen.multiple_update(50)
 import mediapipe as mp
+loading_screen.multiple_update(15)
 from ObjectClasses import *
+loading_screen.multiple_update(5)
 from ImageFunctions import *
+loading_screen.multiple_update(5)
 from Gamemods import *
+loading_screen.multiple_update(5)
 from Music import *
+loading_screen.multiple_update(30)
 
 hardmode = False
 extrememode = False
 
 # Инициализация камеры и детектора рук
 
-handsDetector = mp.solutions.hands.Hands()
+handsDetector = mp.solutions.hands.Hands(max_num_hands=MAX_HANDS_COUNT)
 
 sl, wl = list_ports()
 
@@ -22,6 +32,9 @@ hamsters = []
 
 hinders = []
 diagonal_hinders = []
+loading_screen.multiple_update(15)
+
+loading_screen.close()
 
 # Основной цикл игры
 while cap.isOpened():
@@ -69,6 +82,15 @@ while cap.isOpened():
     # Если все круги под экраном, то конец игры
     if count_under_screen == len(cur_aims) and not GOD_MODE:
         gameover(flippedRGB, score)
+        # Restart the game when cycle closed
+        score = 0
+        hardmode = False
+        extrememode = False
+        cur_aims = [gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT) for _ in range(STARTING_CIRCLES_COUNT)]
+        hamsters.clear()
+        hinders.clear()
+        diagonal_hinders.clear()
+        start_normalmode()
 
     # Если остался один круг, то создаём хомяка (если их количество меньше максимального)
     if count_under_screen == len(cur_aims) - 1 and len(hamsters) < MAX_HAMSTERS:
@@ -139,7 +161,19 @@ while cap.isOpened():
     # Показываем изображение
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
     cv2.imshow("Falling Circles", res_image)
-    cv2.waitKey(1)
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+        break
+    elif key == ord('r'):
+        # Перезапускаем игру
+        score = 0
+        hardmode = False
+        extrememode = False
+        cur_aims = [gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT) for _ in range(STARTING_CIRCLES_COUNT)]
+        hamsters.clear()
+        hinders.clear()
+        diagonal_hinders.clear()
+        start_normalmode()
 
 # Закрываем окно и освобождаем ресурсы
 handsDetector.close()

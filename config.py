@@ -36,4 +36,6 @@ EXTREME_MODE_IMAGE_MAX_INTENSITY = 120
 
 HAMSTER_SPAWN_CHANCE = 15
 
+MAX_HANDS_COUNT = 30
+
 # =====================================================================

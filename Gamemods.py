@@ -35,6 +35,13 @@ def start_extrememode():
     levelup_sound.play()
     play_music(extrememode_music)
 
+def start_normalmode():
+    Circle.speed = [0, DEFAULT_SPEED]
+    Circle.color = DEFAULT_CIRCLE_COLOR
+    Circle.respawn = START_RESPAWN_CIRCLES
+    Circle.radius = DEFAULT_CIRCLE_RADIUS
+    pygame.mixer.music.stop()
+
 def gameover(flippedRGB, score):
     # Рисуем надпись Game Over
     cv2.putText(flippedRGB, "Game Over", (WIDTH // 2 - 250, HEIGHT // 2), cv2.FONT_HERSHEY_SIMPLEX, 3, HARD_MODE_COLOR, 7, cv2.LINE_AA)
@@ -48,7 +55,11 @@ def gameover(flippedRGB, score):
         flippedRGB[:, :, 2] = np.maximum(0, flippedRGB[:, :, 2] - 1)
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Falling Circles", res_image)
-        cv2.waitKey(1)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            exit()
+        elif key == ord('r'):
+            return
 
 def hard_mode(flippedRGB):
     cv2.putText(flippedRGB, "HARDMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
