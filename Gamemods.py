@@ -46,6 +46,7 @@ def gameover(flippedRGB, score):
     # Рисуем надпись Game Over
     cv2.putText(flippedRGB, "Game Over", (WIDTH // 2 - 250, HEIGHT // 2), cv2.FONT_HERSHEY_SIMPLEX, 3, HARD_MODE_COLOR, 7, cv2.LINE_AA)
     cv2.putText(flippedRGB, f"Score: {score}", (WIDTH // 2 - 100, HEIGHT // 2 + 100), cv2.FONT_HERSHEY_SIMPLEX, 2, HARD_MODE_COLOR, 5, cv2.LINE_AA)
+    cv2.putText(flippedRGB, "Press 'R' to restart", (WIDTH // 2 - 200, HEIGHT // 2 + 200), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
     gameover_sound.play()
     pygame.mixer.music.stop()
     # Цикл для изменения цвета экрана
