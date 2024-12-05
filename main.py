@@ -37,10 +37,13 @@ loading_screen.close()
 
 # General game circle
 while cap.isOpened():
+
     flippedRGB = prepare_cap_image(cap)
     if flippedRGB is False:
         break
 
+    if score == 0:
+        draw_beggining_text(flippedRGB)
     # Drawing circles and updating their position
     for circle in cur_aims:
         circle.update()
@@ -105,7 +108,8 @@ while cap.isOpened():
                 # Play sound
                 hamster_sound.play()
                 cur_aims.append(gen_new_circle(STARTING_HEIGHT_RANDOM, WIDTH, HEIGHT))
-                hamsters.remove(hamster)
+                if hamster in hamsters:
+                    hamsters.remove(hamster)
 
     # Check the beginning of hard mode and extreme mode
     if score >= HARD_MODE_STARTING_POINT and not hardmode and not extrememode:
@@ -129,7 +133,7 @@ while cap.isOpened():
         hinder.draw(flippedRGB)
         if hinder.x + hinder.size*2 < 0 or hinder.x - hinder.size*2 > WIDTH:
             hinders.remove(hinder)
-        if hinder.y + hinder.size*2 < 0 or hinder.y - hinder.size*2 > HEIGHT:
+        elif hinder.y + hinder.size*2 < 0 or hinder.y - hinder.size*2 > HEIGHT:
             hinders.remove(hinder)
 
     for hinder in diagonal_hinders:

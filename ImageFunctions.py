@@ -37,16 +37,16 @@ def list_ports():
         camera = cv2.VideoCapture(dev_port)
         if not camera.isOpened():
             is_working = False
-            print(f"Порт {dev_port} не работает.")
+            print(f"Posrt {dev_port} isn't working.")
         else:
             is_reading, img = camera.read()
             w = camera.get(3)
             h = camera.get(4)
             if is_reading:
-                print(f"Порт {dev_port} работает и считывает изображение ({h} x {w})")
+                print(f"Port {dev_port} working ({h} x {w})")
                 working_ports.append(dev_port)
             else:
-                print(f"Порт {dev_port} для камеры ({h} x {w}) есть, но не считывает изображение.")
+                print(f"Port {dev_port} ({h} x {w}) exist, but not reading an image.")
                 available_ports.append(dev_port)
         dev_port += 1
     return available_ports, working_ports
@@ -135,3 +135,7 @@ def find_index_finger_positions(results, image):
             y = int(hand_landmarks.landmark[8].y * image.shape[0])
             index_fingers.append((x, y))
     return index_fingers
+
+def draw_beggining_text(image, text="Catch circles!"):
+    cv2.putText(image, text, (WIDTH // 2 - 300, HEIGHT // 2), cv2.FONT_HERSHEY_SIMPLEX, 3, DEFAULT_MODE_COLOR, 7, cv2.LINE_AA)
+    return image
