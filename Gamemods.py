@@ -1,3 +1,5 @@
+import pygame.mixer
+
 from ObjectClasses import Circle, gen_new_hamster
 from Music import *
 from config import *
@@ -41,7 +43,8 @@ def start_normalmode():
     Circle.color = DEFAULT_CIRCLE_COLOR
     Circle.respawn = START_RESPAWN_CIRCLES
     Circle.radius = DEFAULT_CIRCLE_RADIUS
-    pygame.mixer.music.stop()
+    pygame.mixer.Sound.stop(gameover_sound)
+    play_music(default_music)
 
 # Gameover function
 def gameover(flippedRGB, score):
