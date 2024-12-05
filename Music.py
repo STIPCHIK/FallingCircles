@@ -1,5 +1,5 @@
 import pygame
-# Инициализация миксера, музыки и звуков
+# Initialise mixer, sounds and music
 
 pygame.mixer.init()
 
@@ -12,11 +12,11 @@ default_music = 'static/music/default_music.mp3'
 hardmode_music = 'static/music/hardmode_music.mp3'
 extrememode_music = 'static/music/extrememode_music.mp3'
 
-# Функции для воспроизведения музыки
+# Function for music player
 
 def play_music(music_file):
     pygame.mixer.music.load(music_file)
     pygame.mixer.music.play(-1)
 
-# Воспроизведение музыки по умолчанию
+# Default music
 play_music(default_music)

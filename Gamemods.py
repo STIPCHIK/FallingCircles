@@ -26,7 +26,7 @@ def check_spawn_hamster(score):
 
 
 
-# Функция для начала экстрим режима
+# Function for extreme mod starting
 def start_extrememode():
     Circle.speed = [0,10]
     Circle.color = EXTREME_MODE_COLOR
@@ -35,6 +35,7 @@ def start_extrememode():
     levelup_sound.play()
     play_music(extrememode_music)
 
+# Function for normal mod starting
 def start_normalmode():
     Circle.speed = [0, DEFAULT_SPEED]
     Circle.color = DEFAULT_CIRCLE_COLOR
@@ -42,14 +43,15 @@ def start_normalmode():
     Circle.radius = DEFAULT_CIRCLE_RADIUS
     pygame.mixer.music.stop()
 
+# Gameover function
 def gameover(flippedRGB, score):
-    # Рисуем надпись Game Over
+    # Draw Game Over sign
     cv2.putText(flippedRGB, "Game Over", (WIDTH // 2 - 250, HEIGHT // 2), cv2.FONT_HERSHEY_SIMPLEX, 3, HARD_MODE_COLOR, 7, cv2.LINE_AA)
     cv2.putText(flippedRGB, f"Score: {score}", (WIDTH // 2 - 100, HEIGHT // 2 + 100), cv2.FONT_HERSHEY_SIMPLEX, 2, HARD_MODE_COLOR, 5, cv2.LINE_AA)
     cv2.putText(flippedRGB, "Press 'R' to restart", (WIDTH // 2 - 200, HEIGHT // 2 + 200), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
     gameover_sound.play()
     pygame.mixer.music.stop()
-    # Цикл для изменения цвета экрана
+    # Cycle for screen color changing
     while True:
         flippedRGB[:, :, 0] = np.minimum(255, flippedRGB[:, :, 0] + 1)
         flippedRGB[:, :, 1] = np.maximum(0, flippedRGB[:, :, 1] - 1)
@@ -62,10 +64,12 @@ def gameover(flippedRGB, score):
         elif key == ord('r'):
             return
 
+# Hard mode function
 def hard_mode(flippedRGB):
     cv2.putText(flippedRGB, "HARDMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, HARD_MODE_COLOR, 3, cv2.LINE_AA)
     return make_image_reddish(flippedRGB, intensity=50)
 
+# Extreme mode function
 def extreme_mode(flippedRGB):
     global EXTREME_MODE_IMAGE_CUR_INTENSITY, EXTREME_MODE_IMAGE_INTENSITY_CHANGE_SIGN
     cv2.putText(flippedRGB, "EXTREMEMODE", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, EXTREME_MODE_COLOR, 3,

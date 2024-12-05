@@ -4,7 +4,7 @@ import numpy as np
 from ImageFunctions import add_png_to_image
 from config import *
 
-# Класс для всех движущихся объектов
+# Class for moving objects
 class MovingObject:
     speed = [0,0]
     def __init__(self, x:int, y:int):
@@ -18,7 +18,7 @@ class MovingObject:
     def __str__(self):
         return f"Object at ({self.x}, {self.y}) with speed {self.speed}"
 
-# Класс падающих кругов
+# Class of Falling Circles
 
 class Circle(MovingObject):
     speed = [0, DEFAULT_SPEED]
@@ -30,8 +30,7 @@ class Circle(MovingObject):
     def draw(self, screen):
         cv2.circle(screen, (self.x, self.y), self.radius, self.color, 5)
 
-# Класс хомяков, которые скачут по экрану (как DVD), когда у игрока остаётся 1 круг. При соприкосновении с хомяком игрок получает новый круг
-
+# Hamsters class
 class Hamster(MovingObject):
     def __init__(self, x, y, speed:list[int], image_path:str = 'static/images/hamster.png'):
         super().__init__(x, y)
@@ -62,8 +61,7 @@ class Hamster(MovingObject):
         return f"Hamster at ({self.x}, {self.y}) with speed {self.speed}"
 
 
-# Класс хайндеров, которые являются восьмиугольниками и закрывают обзор игроку
-# Их количество увеличивается по мере прохождения игры
+# Hinders class
 
 class Hinder(MovingObject):
     def __init__(self, x, y, speed:list[int], size:int=30, color:tuple[int]=(0,0,0)):
@@ -88,9 +86,7 @@ class Hinder(MovingObject):
     def draw(self, screen):
         cv2.fillPoly(screen, [np.array(self.shape, dtype=np.int32)], tuple(self.color))
 
-# Класс диагональных хайндеров, которые являются параллелограммами и закрывают обзор игроку.
-# Их количество также увеличивается по мере прохождения игры
-
+# Diagonal hamster class
 class DiagonalHinder(MovingObject):
     def __init__(self,speed:int, size:int=100, color:tuple[int]=(0,0,0)):
         super().__init__(-300 if speed > 0 else WIDTH+300, 0)
@@ -115,7 +111,7 @@ class DiagonalHinder(MovingObject):
     def draw(self, screen):
         cv2.fillPoly(screen, [np.array(self.shape, dtype=np.int32)], tuple(self.color))
 
-# Функции для генерации хайндеров и кругов
+# Functions for hinders, circles and hamsters generating
 
 def gen_new_diagonal_hinder(speed, size, color):
     return DiagonalHinder(choice([-1,1])*randint(10,50), size, color)
