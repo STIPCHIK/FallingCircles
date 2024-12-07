@@ -14,7 +14,7 @@ extrememode_music = 'static/music/extrememode_music.mp3'
 
 # Function for music player
 
-def play_music(music_file):
+def play_music(music_file:str):
     pygame.mixer.music.load(music_file)
     pygame.mixer.music.play(-1)
 

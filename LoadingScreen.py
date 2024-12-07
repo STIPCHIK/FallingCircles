@@ -38,7 +38,7 @@ class LoadingScreen:
     def close(self, window_name="Loading"):
         cv2.destroyWindow(window_name)
 
-    def update(self, window_name="Loading"):
+    def update(self):
         self._draw_random_circle()
         self.show()
     def multiple_update(self, times, window_name="Loading"):

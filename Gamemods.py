@@ -21,7 +21,7 @@ def start_hardmode():
     levelup_sound.play()
     play_music(hardmode_music)
 
-def check_spawn_hamster(score):
+def check_spawn_hamster(score:int):
     if score > HARD_MODE_STARTING_POINT and randint(1,HAMSTER_SPAWN_CHANCE) == 1:
         return gen_new_hamster()
     return None
@@ -47,7 +47,7 @@ def start_normalmode():
     play_music(default_music)
 
 # Gameover function
-def gameover(flippedRGB, score):
+def gameover(flippedRGB, score:int):
     # Draw Game Over sign
     cv2.putText(flippedRGB, "Game Over", (WIDTH // 2 - 250, HEIGHT // 2), cv2.FONT_HERSHEY_SIMPLEX, 3, HARD_MODE_COLOR, 7, cv2.LINE_AA)
     cv2.putText(flippedRGB, f"Score: {score}", (WIDTH // 2 - 100, HEIGHT // 2 + 100), cv2.FONT_HERSHEY_SIMPLEX, 2, HARD_MODE_COLOR, 5, cv2.LINE_AA)
