@@ -41,6 +41,6 @@ class LoadingScreen:
     def update(self):
         self._draw_random_circle()
         self.show()
-    def multiple_update(self, times, window_name="Loading"):
+    def multiple_update(self, times):
         for _ in range(times):
-            self.update(window_name)
+            self.update()
